@@ -16,11 +16,18 @@ exports.serveAssets = function(res, asset, callback) {
   // css, or anything that doesn't change often.)
   if (asset === '/') {
     asset = '/index.html';
-  } 
+  }
   fs.readFile(archive.paths.siteAssets + asset, (err, data) => {
     if (err) {
       console.log(err);
-      callback(res, '', 404);
+      fs.readFile(archive.paths.archivedSites + asset, (err, data) => {
+        if ( err ) {
+          callback(res, '', 404);  
+        } else {
+          callback(res, data);
+        }
+      });
+      
     } else {
       console.log(data);
       callback(res, data);
