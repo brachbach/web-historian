@@ -1,3 +1,4 @@
+var promise = require('bluebird');
 var fs = require('fs');
 var path = require('path');
 var _ = require('underscore');
@@ -28,28 +29,38 @@ exports.initialize = function(pathsObj) {
 
 exports.readListOfUrls = readListOfUrls = function(callback) {
   fs.readFile(paths.list, (err, data) => {
-    callback((data.toString() === '') ? [] : data.toString().split('\n'));
+    var dataSplit = data.toString().split('\n');
+    var result = (dataSplit[dataSplit.length - 1] === '') ? dataSplit.slice(0, -1) : dataSplit;
+    callback(err, result);
   });
 };
 
-exports.isUrlInList = function(target, callback) {
-  callback(readListOfUrls(data => data.indexOf(target) > -1));
+exports.isUrlInList = isUrlInList = function(target, callback) {
+  readListOfUrls((err, data) => {
+    callback(err, data.indexOf(target) > -1);
+  });
 };
 
-exports.addUrlToList = function(url, callback) {
+exports.addUrlToList = addUrlToList = function(url, callback) {
   fs.appendFile(paths.list, url, callback);
 };
 
-exports.isUrlArchived = function(url, callback) {
-  fs.stat(`${paths.archivedSites}/${url}`, err => callback(err ? false : true));
+exports.isUrlArchived = isUrlArchived = function(url, callback) {
+  fs.stat(`${paths.archivedSites}/${url}`, err => callback(null, err ? false : true));
 };
 
-exports.downloadUrls = function(urlArray) {
+exports.downloadUrls = downloadUrls = function(urlArray, callback) {
   urlArray.forEach( url => {
     request.get(`http://${url}`, (err, response, data) => {
       fs.appendFile(`${paths.archivedSites}/${url}`, data, err => {
-        err && console.log(err);
+        callback(err);
       });
     });
   });
+  // callback(err, true or false)
 };
+exports.readListOfUrlsAsync = promise.promisify(readListOfUrls);
+exports.isUrlInListAsync = promise.promisify(isUrlInList);
+exports.addUrlToListAsync = promise.promisify(addUrlToList);
+exports.isUrlArchivedAsync = promise.promisify(isUrlArchived);
+exports.downloadUrlsAsync = promise.promisify(downloadUrls);
