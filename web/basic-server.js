@@ -11,6 +11,7 @@ var port = 8080;
 var ip = '127.0.0.1';
 
 var router = {
+  // '/'
 };
 
 const server = http.createServer(function(req, res) {

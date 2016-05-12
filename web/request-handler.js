@@ -8,6 +8,9 @@ exports.handleRootRequest = utils.makeActionHandler(
   {
     GET: function(req, res) {
       httpHelpers.serveAssets(res, req.url, httpHelpers.sendResponse); //should add getting asset name from the request url
+    },
+    POST: function(req, res) {
+      httpHelpers.collectData(req, res, (data, response) => httpHelpers.archiveSite(data, response));
     }
   }
 );

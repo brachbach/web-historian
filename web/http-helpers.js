@@ -35,19 +35,30 @@ exports.serveAssets = function(res, asset, callback) {
   });
 };
 
-exports.sendResponse = function(response, data, statusCode) {
+exports.sendResponse = sendResponse = function(response, data, statusCode) {
   statusCode = statusCode || 200;
   response.writeHead(statusCode, headers); //this will by default set content type to html
   response.end(data);
 };
 
-exports.collectData = function(request, callback) {
+exports.collectData = function(request, response, callback) {
   var data = '';
   request.on('data', function(chunk) {
     data += chunk;
   });
   request.on('end', function() {
-    callback(JSON.parse(data));
+    const dataSplit = data.split('=');
+    callback(dataSplit[1], response);
+  });
+};
+
+exports.archiveSite = (url, response) => {
+  fs.appendFile(archive.paths.list, `${url}\n`, err => {
+    if ( err ) {
+      console.log(err);
+    } else {
+      sendResponse(response, '', 302);
+    }
   });
 };
 
