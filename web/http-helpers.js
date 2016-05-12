@@ -53,11 +53,19 @@ exports.collectData = function(request, response, callback) {
 };
 
 exports.archiveSite = (url, response) => {
-  fs.appendFile(archive.paths.list, `${url}\n`, err => {
+  fs.readFile(`${archive.paths.archivedSites}/${url}`, (err, data) => {
     if ( err ) {
-      console.log(err);
+      fs.appendFile(archive.paths.list, `${url}\n`, err => {
+        if ( err ) {
+          console.log(err);
+        } else {
+          fs.readFile(archive.paths.siteAssets + '/loading.html', (err, data) => {
+            sendResponse(response, data, 302);  
+          });     
+        }
+      });
     } else {
-      sendResponse(response, '', 302);
+      sendResponse(response, data, 201); 
     }
   });
 };
