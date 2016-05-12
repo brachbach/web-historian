@@ -1,5 +1,6 @@
+var Promise = require('bluebird');
 var path = require('path');
-var fs = require('fs');
+var fs = Promise.promisifyAll(require('fs'));
 var archive = require('../helpers/archive-helpers');
 
 exports.headers = headers = {
@@ -52,6 +53,22 @@ exports.collectData = function(request, response, callback) {
 };
 
 exports.archiveSite = (url, response) => {
+  fs.readFile(`${archive.paths.archivedSites}/${url}`, (err, data) => {
+    if ( err ) {
+      fs.appendFile(archive.paths.list, `${url}\n`, err => {
+        if ( err ) {
+          console.log(err);
+        } else {
+          fs.readFileAsync(archive.paths.siteAssets + '/loading.html')
+            .then(data => sendResponse(response, data, 302))
+            .catch(err => sendResponse(response, err, 500));       
+        }
+      });
+    } else {
+      sendResponse(response, data, 201); 
+    }
+  });
+
   fs.readFile(`${archive.paths.archivedSites}/${url}`, (err, data) => {
     if ( err ) {
       fs.appendFile(archive.paths.list, `${url}\n`, err => {

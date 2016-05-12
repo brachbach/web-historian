@@ -1,8 +1,16 @@
 var promise = require('bluebird');
-var fs = require('fs');
+var fs = promise.promisifyAll(require('fs'));
 var path = require('path');
 var _ = require('underscore');
 var request = require('request');
+
+var requestPromise = (url) => {
+  return new promise((resolve, reject) => {  
+    request(url, (err, response, data) => {
+      err ? reject(err) : resolve(data);
+    });
+  });
+};
 
 /*
  * You will need to reuse the same paths many times over in the course of this sprint.
@@ -28,11 +36,10 @@ exports.initialize = function(pathsObj) {
 // modularize your code. Keep it clean!
 
 exports.readListOfUrls = readListOfUrls = function(callback) {
-  fs.readFile(paths.list, (err, data) => {
-    var dataSplit = data.toString().split('\n');
-    var result = (dataSplit[dataSplit.length - 1] === '') ? dataSplit.slice(0, -1) : dataSplit;
-    callback(err, result);
-  });
+  fs.readFileAsync(paths.list)
+    .then (data => data.toString().split('\n'))
+    .then (data => data[data.length - 1] === '' ? data.slice(0, -1) : data)
+    .then (data => callback(null, data));
 };
 
 exports.isUrlInList = isUrlInList = function(target, callback) {
@@ -51,13 +58,10 @@ exports.isUrlArchived = isUrlArchived = function(url, callback) {
 
 exports.downloadUrls = downloadUrls = function(urlArray, callback) {
   urlArray.forEach( url => {
-    request.get(`http://${url}`, (err, response, data) => {
-      fs.appendFile(`${paths.archivedSites}/${url}`, data, err => {
-        callback(err);
-      });
-    });
+    requestPromise(`http://${url}`)
+      .then(data => fs.appendFileAsync(`${paths.archivedSites}/${url}`, data))
+      .then(data => callback(null, data));
   });
-  // callback(err, true or false)
 };
 exports.readListOfUrlsAsync = promise.promisify(readListOfUrls);
 exports.isUrlInListAsync = promise.promisify(isUrlInList);
