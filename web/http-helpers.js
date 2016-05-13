@@ -2,6 +2,9 @@ var Promise = require('bluebird');
 var path = require('path');
 var fs = Promise.promisifyAll(require('fs'));
 var archive = require('../helpers/archive-helpers');
+var redis = require('redis');
+
+var redisClient = redis.createClient();
 
 exports.headers = headers = {
   'access-control-allow-origin': '*',
@@ -11,6 +14,18 @@ exports.headers = headers = {
   // 'Content-Type': 'text/html'
 };
 
+var isFileAsync = filePath => {
+  return new Promise((resolve, reject) => {
+    fs.statAsync(filePath)
+      .then (data => resolve(true))
+      .catch (err => resolve(false));
+  });
+};
+
+isFileAsync(archive.paths.archivedSites).then(data => console.log(data));
+isFileAsync('./httpadf').then(data => console.log(data));
+
+
 exports.serveAssets = function(res, asset, callback) {
   // Write some code here that helps serve up your static files!
   // (Static files are things like html (yours or archived from others...),
@@ -18,6 +33,7 @@ exports.serveAssets = function(res, asset, callback) {
   if (asset === '/') {
     asset = '/index.html';
   }
+
   fs.readFile(archive.paths.siteAssets + asset, (err, data) => {
     if (err) {
       console.log(err);
@@ -55,36 +71,21 @@ exports.collectData = function(request, response, callback) {
 exports.archiveSite = (url, response) => {
   fs.readFile(`${archive.paths.archivedSites}/${url}`, (err, data) => {
     if ( err ) {
-      fs.appendFile(archive.paths.list, `${url}\n`, err => {
-        if ( err ) {
-          console.log(err);
-        } else {
-          fs.readFileAsync(archive.paths.siteAssets + '/loading.html')
-            .then(data => sendResponse(response, data, 302))
-            .catch(err => sendResponse(response, err, 500));       
-        }
-      });
-    } else {
-      sendResponse(response, data, 201); 
-    }
-  });
-
-  fs.readFile(`${archive.paths.archivedSites}/${url}`, (err, data) => {
-    if ( err ) {
-      fs.appendFile(archive.paths.list, `${url}\n`, err => {
-        if ( err ) {
+      redisClient.hset('sites', url, url, err => {
+        if (err === 0) {
           console.log(err);
         } else {
           fs.readFile(archive.paths.siteAssets + '/loading.html', (err, data) => {
             sendResponse(response, data, 302);  
-          });     
+          });
         }
-      });
+      });    
     } else {
       sendResponse(response, data, 201); 
     }
   });
 };
+
 
 exports.makeActionHandler = function(actionMap) {
   return function(request, response) {

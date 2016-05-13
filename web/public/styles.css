@@ -1,4 +1,51 @@
 body {
-  margin : 0px;
   font-family: arial, sans-serif;
+}
+
+
+#website-container {
+  height: 100%;
+  width: 100%;
+}
+
+.title {
+  margin-top: 100px;
+}
+
+.website-input {
+  margin-top: 40px;
+}
+
+.relative {
+  position: relative;
+}
+
+.absolute {
+  position: absolute;
+}
+
+.storage {
+  right: 0;
+  font-size: 50px;
+}
+
+.animation-file {
+  height: 200px;
+  margin-top: 50px;
+}
+
+.file {
+  font-size: 50px;
+  animation: fileMove 4s cubic-bezier(0.39, 0.58, 0.46, 0.96) infinite;
+}
+
+@keyframes fileMove {
+  0% {left: 0;}
+  90% {
+    opacity: 1;
+  }
+  100% {
+    left: 95%;
+    opacity: 0;
+  }
 }

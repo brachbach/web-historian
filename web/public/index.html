@@ -2,11 +2,23 @@
 <html>
 <head>
   <link rel="stylesheet" type="text/css" href="styles.css" />
+  <link href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-1q8mTJOASx8j1Au+a5WDVnPi2lkFfwwEAa8hDDdjZlpLegxhjVME1fgjWPGmkzs7" crossorigin="anonymous">
 </head>
 <body>
-  Enter a URL here:
-  <form method="POST" action="/">
-    <input type="input" name="url"></input>
-  </form>
+  <div class="container">
+    <div class="row">
+      <div class="col-xs-12 text-center"><h2 class="title">Web Historian</h2></div>
+      <div class="col-xs-4 col-xs-offset-4 text-center">
+        <form method="POST" action="/">
+          <input type="input" name="url" class="form-control text-center website-input" placeholder="www.example.com"></input>
+        </form>
+      </div>
+      <div class="col-xs-12 relative animation-file">
+        <div class="absolute file"><span class="glyphicon glyphicon-file"></span></div>
+        <div class="absolute storage"><span class="glyphicon glyphicon-inbox"></span></div>
+      </div>
+    </div>
+  </div>
+
 </body>
 </html>

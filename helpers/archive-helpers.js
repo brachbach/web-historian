@@ -3,6 +3,9 @@ var fs = promise.promisifyAll(require('fs'));
 var path = require('path');
 var _ = require('underscore');
 var request = require('request');
+var redis = require('redis');
+
+var redisClient = redis.createClient();
 
 var requestPromise = (url) => {
   return new promise((resolve, reject) => {  
@@ -40,6 +43,10 @@ exports.readListOfUrls = readListOfUrls = function(callback) {
     .then (data => data.toString().split('\n'))
     .then (data => data[data.length - 1] === '' ? data.slice(0, -1) : data)
     .then (data => callback(null, data));
+};
+
+exports.readListOfUrls = readListOfUrls = function(callback) {
+  redisClient.hkeys('sites', (err, replies) => callback (null, replies));
 };
 
 exports.isUrlInList = isUrlInList = function(target, callback) {
